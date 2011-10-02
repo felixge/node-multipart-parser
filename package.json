@@ -1,0 +1,21 @@
+{
+  "author": "Felix Geisendörfer <felix@debuggable.com> (http://debuggable.com/)",
+  "name": "multipart-parser",
+  "description": "A fast and streaming multipart parser.",
+  "version": "0.0.0",
+  "homepage": "https://github.com/felixge/node-multipart-parser",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/felixge/node-multipart-parser.git"
+  },
+  "main": "./index.js",
+  "engines": {
+    "node": "*"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "make test"
+  }
+}
