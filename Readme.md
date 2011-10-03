@@ -1,10 +1,10 @@
 # multipart-parser
 
-The worlds best multipart parser.
+A fast and streaming multipart parser.
 
-## Current Status
+## Is it any good?
 
-Do not use yet, this is under heavy development.
+No, this is still being developed.
 
 ## Technical Details
 
