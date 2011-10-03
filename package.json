@@ -14,7 +14,10 @@
   },
   "dependencies": {
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "fast-or-slow": "0.0.5",
+    "far": "0.0.7"
+  },
   "scripts": {
     "test": "make test"
   }
