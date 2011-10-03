@@ -1,0 +1,568 @@
+<HTML>
+<HEAD>
+<TITLE>RFC1341(MIME) : 7    The Multipart content type </TITLE>
+<NEXTID N="z4">
+</HEAD>
+<BODY>
+<H1><A
+NAME="z3" HREF="0_TableOfContents.html">7.2</A>  The Multipart Content-Type</H1>In the case of multiple part messages,
+in which one or  more  different
+sets  of  data  are  combined in
+a single body, a  "multipart" Content-Type
+field must appear in  the  entity's
+ header. The body must then contain
+one or more "body parts,"  each
+preceded by an encapsulation boundary,
+and the last one  followed  by a
+ closing boundary.  Each part starts
+with an  encapsulation  boundary,
+and  then  contains  a  body  part
+ consisting  of   header area, a
+blank line, and a body area.  Thus
+a body part is similar to an RFC
+822 message in syntax,  but different
+in meaning. <P>
+A body part is NOT to be interpreted
+as  actually  being  an  RFC  822
+message.   To  begin  with,  NO header
+fields are  actually required in
+body parts.  A body  part  that starts
+ with  a blank line, therefore,
+is allowed and is a body part  for
+which all default values are to be
+assumed.  In  such  a  case,  the
+absence  of  a Content-Type header
+field implies  that the encapsulation
+is plain  US-ASCII  text.   <A
+NAME="z2">The only
+ header  fields  that have defined
+meaning for body parts are  those
+the names of which begin with "Content-".
+  All  other  header fields  are
+ generally  to be ignored in body
+parts.</A>  Although  they should  generally
+ be   retained  in   mail  processing,
+ they may be discarded by gateways
+if necessary.  Such other fields
+are permitted to appear in body parts
+ but  should not  be  depended on.
+"X-" fields may be created for 
+experimental or private purposes,
+with the recognition that  the information
+they contain may be lost at some
+gateways. <P>
+The distinction between an RFC 822
+message and a  body  part  is  subtle,
+but  important.  A gateway between
+Internet and  X.400 mail, for example,
+must be able to tell the difference
+ between  a  body part that contains
+an image and a body part  that contains
+an encapsulated message, the body
+of which  is  an  image.   In order
+to represent the latter, the body
+part  must have "Content-Type: message",
+and its body  (after  the  blank
+line)  must be the encapsulated message,
+with its own  "Content-Type: image"
+header  field.   The  use of  similar
+ syntax facilitates the conversion
+of messages to body parts,  and
+vice versa, but the distinction between
+the two must be  understood  by
+implementors. (For the special case
+in which  all parts actually are
+messages, a "digest" subtype is 
+also  defined.) <P>
+As stated previously, each  body
+part  is  preceded  by  an  encapsulation
+boundary.  The encapsulation boundary
+MUST NOT  appear inside any of the
+encapsulated parts.   Thus,  it is
+ crucial  that  the  composing agent
+ be  able to choose and  specify
+the unique boundary that will separate
+the parts. <P>
+All present and future subtypes of
+the "multipart" type must  use an
+ identical  syntax.  Subtypes may
+ differ  in their  semantics, and
+may impose additional restrictions
+on syntax,  but  must  conform to
+the required syntax for the multipart
+ type.  This requirement ensures
+that  all  conformant  user  agents
+will  at least be able to recognize
+and separate the  parts of any multipart
+ entity,  even  of  an unrecognized
+ subtype. <P>
+As stated in the definition of the
+Content-Transfer-Encoding  field,
+no encoding other than "7bit", "8bit",
+or "binary" is  permitted for entities
+of type "multipart".   The  multipart
+ delimiters  and  header fields
+are always 7-bit ASCII in any  case,
+and data within the body parts can
+be  encoded  on  a  part-by-part
+basis,  with  Content-Transfer-Encoding
+fields  for each appropriate body
+part. <P>
+Mail gateways, relays, and other
+mail  handling  agents  are  commonly
+known  to alter the top-level header
+of an RFC 822  message.   In particular,
+they frequently  add,  remove,  or
+ reorder  header  fields.   Such
+alterations  are explicitly  forbidden
+for the body part headers embedded
+in  the  bodies  of messages of
+type "multipart." 
+<H2><A
+NAME="z0">7.2.1     Multipart:  The common
+syntax</A></H2>All subtypes of "multipart" share
+a common  syntax,  defined  in this
+ section.   A simple example of a
+multipart message  also appears
+in this section.  An example of a
+more  complex  multipart message
+is given in Appendix C. <P>
+The Content-Type field for multipart
+entities requires  one  parameter,
+ "boundary",   which  is  used to
+ specify  the  encapsulation boundary.
+  The  encapsulation boundary   is
+ defined   as  a line  consisting
+ entirely  of  two hyphen  characters
+("-", decimal code 45) followed by
+ the  boundary  parameter value
+from the Content-Type header field.
+<P>
+NOTE:  The hyphens are  for  rough
+compatibility  with  the  earlier
+RFC  934  method  of message encapsulation,
+and for  ease   of   searching 
+for   the   boundaries    in   some
+ implementations.  However, it should
+be noted that multipart  messages
+ are  NOT  completely compatible
+ with   RFC   934  encapsulations;
+in  particular,  they  do  not obey
+RFC 934  quoting conventions  for
+embedded  lines  that  begin  with
+ hyphens.   This  mechanism  was
+chosen  over  the  RFC  934  mechanism
+because the latter causes lines to
+grow with  each  level  of  quoting.
+The combination of this growth with
+the  fact that SMTP implementations
+sometimes  wrap  long  lines  made
+the  RFC 934 mechanism unsuitable
+for use in the event  that deeply-nested
+multipart structuring is ever desired.
+<P>
+Thus, a typical multipart Content-Type
+header  field  might  look like
+this: 
+<PRE>
+     Content-Type: multipart/mixed; 
+          boundary=gc0p4Jq0M2Yt08jU534c0p
+ 
+</PRE>This indicates that the entity consists
+of  several  parts,  each itself
+with a structure that is syntactically
+identical  to an RFC 822 message,
+except that the header area might
+be  completely  empty,  and  that
+the parts are each preceded by 
+the line 
+<PRE>
+     --gc0p4Jq0M2Yt08jU534c0p
+ 
+</PRE>Note that the  encapsulation  boundary
+must  occur  at  the  beginning
+of  a line, i.e., following a CRLF,
+and that that  initial CRLF is considered
+to be part of  the  encapsulation
+ boundary  rather  than  part  of
+the preceding part.    The  boundary
+must be followed immediately either
+by another CRLF  and the header
+fields for the next part, or by two
+CRLFs, in  which case there are
+no header fields for the next part
+(and  it is therefore assumed to
+be of Content-Type text/plain). <P>
+NOTE:   The  CRLF  preceding  the
+encapsulation   line   is  considered
+part  of  the boundary so that it
+is possible to  have a part that
+does not end with  a  CRLF  (line
+ break).  Body  parts that must
+be considered to end with line breaks,
+ therefore, should have two CRLFs
+preceding the encapsulation  line,
+the first of which is part of the
+preceding body part,  and the  second
+of  which  is  part  of  the  encapsulation
+ boundary. <P>
+The requirement that the encapsulation
+boundary begins  with  a  CRLF implies
+ that  the  body of a multipart entity
+must  itself begin with a CRLF before
+the first encapsulation line  --
+ that  is, if the "preamble" area
+is not used, the entity  headers
+must be followed by TWO CRLFs.  This
+is  indeed  how  such  entities
+should be composed.  A tolerant mail
+reading  program, however, may interpret
+a  body  of  type multipart  that
+ begins  with  an encapsulation line
+NOT initiated by a  CRLF  as  also
+ being  an encapsulation  boundary,
+ but  a  compliant  mail  sending
+ program must  not  generate  such
+ entities. <P>
+Encapsulation  boundaries  must not
+  appear   within   the  encapsulations,
+and  must  be no longer than 70 characters,
+ not counting the two leading hyphens.
+<P>
+The encapsulation boundary following
+the last body part is a  distinguished
+delimiter that indicates that no
+further body  parts will follow.
+Such a delimiter  is  identical to
+ the  previous  delimiters, with
+the addition of two more hyphens
+ at the end of the line: 
+<PRE>
+     --gc0p4Jq0M2Yt08jU534c0p-- 
+</PRE>There appears to be room for additional
+information prior to  the  first
+encapsulation  boundary  and following
+the final  boundary.  These areas
+should generally be left  blank,
+and  implementations  should  ignore
+anything that appears before  the
+first boundary or after the last
+one. <P>
+NOTE:  These "preamble" and "epilogue"
+areas  are  not  used  because of
+the lack of proper typing of these
+parts and the  lack  of  clear semantics
+ for  handling  these areas   at
+ gateways, particularly X.400 gateways.
+<P>
+NOTE:  Because encapsulation boundaries
+must not  appear  in  the  body
+parts  being  encapsulated,  a user
+ agent  must  exercise care to choose
+a unique boundary.  The boundary
+ in  the example above could have
+been the result of an algorithm 
+designed to produce boundaries with
+a very  low  probability  of already
+ existing in the data to be encapsulated
+without  having to prescan  the
+ data.   Alternate algorithms  might
+ result in more 'readable' boundaries
+for a recipient with an  old user
+agent, but would require  more  attention
+ to  the  possibility   that   the
+  boundary  might  appear  in  the
+ encapsulated part.   The  simplest
+ boundary possible   is  something
+like "---", with a closing boundary
+of "-----". <P>
+As a very simple example, the  following
+multipart  message  has  two  parts,
+both  of  them  plain  text,  one
+of them  explicitly typed and one
+of them implicitly typed: 
+<PRE>
+     From: Nathaniel Borenstein &lt;nsb@bellcore.com> 
+     To:  Ned Freed &lt;ned@innosoft.com> 
+     Subject: Sample message 
+     MIME-Version: 1.0 
+     Content-type: multipart/mixed; boundary="simple 
+     boundary" 
+
+     This is the preamble.  It is to be ignored, though it 
+     is a handy place for mail composers to include an 
+     explanatory note to non-MIME compliant readers. 
+     --simple boundary 
+
+     This is implicitly typed plain ASCII text. 
+     It does NOT end with a linebreak. 
+     --simple boundary 
+     Content-type: text/plain; charset=us-ascii 
+
+     This is explicitly typed plain ASCII text. 
+     It DOES end with a linebreak. 
+
+     --simple boundary-- 
+     This is the epilogue.  It is also to be ignored.
+
+</PRE>The use of a Content-Type of multipart
+in a body part within  another multipart
+ entity  is explicitly allowed. 
+ In such  cases, for obvious reasons,
+care must  be  taken  to ensure 
+that  each  nested  multipart entity
+ must  use a different  boundary
+delimiter. See Appendix C for an
+example of  nested  multipart entities.
+<P>
+The use of the multipart Content-Type
+with  only  a  single  body  part
+may  be  useful  in  certain  contexts,
+and  is  explicitly permitted. <P>
+The only mandatory parameter for
+the multipart  Content-Type  is
+the  boundary  parameter,  which
+consists  of  1  to 70  characters
+from a set of characters known to
+be very  robust  through  email
+gateways,  and  NOT ending with white
+space.  (If a boundary appears to
+end with white  space,  the  white
+ space  must be presumed to have
+been added by a gateway, and  should
+be  deleted.)   It  is  formally
+specified  by  the  following BNF:
+
+<PRE>
+boundary := 0*69&lt;bchars> bcharsnospace 
+
+bchars := bcharsnospace / " " 
+
+bcharsnospace :=    DIGIT / ALPHA / "'" / "(" / ")" / "+"  / 
+"_" 
+               / "," / "-" / "." / "/" / ":" / "=" / "?" 
+
+</PRE>Overall, the body of a multipart
+entity may be specified  as  follows:
+
+<PRE>
+multipart-body := preamble 1*encapsulation 
+               close-delimiter epilogue 
+
+encapsulation := delimiter CRLF body-part 
+
+delimiter := CRLF "--" boundary   ; taken from  Content-Type 
+field. 
+                               ;   when   content-type    is 
+multipart 
+                             ; There must be no space 
+                             ; between "--" and boundary. 
+
+close-delimiter := delimiter "--" ; Again, no  space  before 
+"--" 
+
+preamble :=  *text                  ;  to  be  ignored  upon 
+receipt. 
+
+epilogue :=  *text                  ;  to  be  ignored  upon 
+receipt. 
+
+body-part = &lt;"message" as defined in RFC 822, 
+         with all header fields optional, and with the 
+         specified delimiter not occurring anywhere in 
+         the message body, either on a line by itself 
+         or as a substring anywhere.  Note that the 
+         semantics of a part differ from the semantics 
+         of a message, as described in the text.> 
+
+</PRE>NOTE:  Conspicuously missing from
+the multipart  type  is  a  notion
+of  structured,  related body parts.
+In general, it  seems premature
+to try to  standardize  interpart
+structure  yet.  It is recommended
+that those wishing to provide a more
+ structured or integrated multipart
+messaging facility should  define
+ a   subtype  of  multipart  that
+is  syntactically  identical, but
+that  always  expects  the  inclusion
+of  a  distinguished part that can
+be used to specify the structure
+ and integration of the other parts,
+probably  referring  to  them by
+ their Content-ID field.  If this
+approach is used,  other implementations
+will not recognize  the  new  subtype,
+ but  will  treat it as the primary
+subtype (multipart/mixed)  and will
+thus be able to show the user the
+parts  that  are  recognized. 
+<H2>7.2.2     The Multipart/mixed (primary)
+subtype</H2>The primary subtype for multipart,
+"mixed", is intended  for  use when
+ the body parts are independent and
+intended to be  displayed  serially.
+ Any  multipart   subtypes   that
+ an  implementation does not recognize
+should be treated as being  of subtype
+"mixed". 
+<H2>7.2.3     The Multipart/alternative
+subtype </H2>The multipart/alternative type is
+syntactically identical to  multipart/mixed,
+ but  the  semantics  are  different.
+ In  particular, each of the parts
+is an "alternative" version of 
+the same information.  User agents
+should recognize that the  content
+of the various parts are interchangeable.
+The  user  agent  should  either
+choose  the  "best" type based on
+the  user's environment and preferences,
+or offer  the  user  the  available
+alternatives.  In general, choosing
+the best type  means displaying
+only the LAST part that can  be displayed.
+ This  may be used, for example,
+to send mail in a fancy text  format
+in such  a  way  that it  can  easily
+ be  displayed  anywhere: 
+<PRE>
+From:  Nathaniel Borenstein &lt;nsb@bellcore.com> 
+To: Ned Freed &lt;ned@innosoft.com> 
+Subject: Formatted text mail 
+MIME-Version: 1.0 
+Content-Type: multipart/alternative; boundary=boundary42 
+
+
+--boundary42 
+Content-Type: text/plain; charset=us-ascii 
+
+...plain text version of message goes here.... 
+
+--boundary42 
+Content-Type: text/richtext 
+
+.... richtext version of same message goes here ... 
+--boundary42 
+Content-Type: text/x-whatever 
+
+.... fanciest formatted version of same  message  goes  here 
+... 
+--boundary42-- 
+
+</PRE>In this example, users  whose  mail
+system  understood  the  "text/x-whatever"
+format  would see only the fancy
+version,  while other users would
+see only the richtext or plain  text
+ version, depending on the capabilities
+of their system. <P>
+In general, user agents that  compose
+multipart/alternative  entities
+should place the body parts in increasing
+order of  preference, that is, with
+the  preferred  format  last.  For
+ fancy  text,  the sending user
+agent should put the plainest  format
+first and the richest format  last.
+ Receiving  user  agents  should
+pick  and  display  the last format
+they are  capable of  displaying.
+ In  the  case  where  one  of the
+ alternatives  is  itself  of type
+ "multipart" and contains  unrecognized
+sub-parts, the user agent may choose
+either  to  show that alternative,
+an earlier alternative, or both.
+<P>
+NOTE:  From an implementor's perspective,
+it might seem more  sensible  to
+reverse  this  ordering, and have
+the plainest  alternative last.
+However, placing the plainest alternative
+ first    is    the    friendliest
+ possible   option   when  mutlipart/alternative
+entities are viewed using a  non-MIME-
+ compliant mail reader.  While this
+approach does impose some  burden
+on  compliant  mail  readers,  interoperability
+with  older  mail  readers was deemed
+to be more important in this  case.
+<P>
+It may be the case  that  some  user
+agents,  if  they  can  recognize
+more than one of the formats, will
+prefer to offer  the user the choice
+of which format  to  view.   This
+makes  sense, for example, if mail
+includes both a nicely-formatted
+ image version and an easily-edited
+text  version.   What  is  most
+critical,  however, is that the user
+not automatically  be shown multiple
+versions of the  same  data.  Either
+ the  user  should  be shown the
+last recognized version or should
+ explicitly be given the choice.
+
+<H2>7.2.4     The Multipart/digest subtype
+</H2>This document defines a "digest"
+subtype  of  the  multipart  Content-Type.
+ This  type  is  syntactically identical
+ to  multipart/mixed, but  the 
+semantics  are  different.   In 
+particular,  in a digest, the default
+Content-Type value for  a   body
+  part   is   changed   from    "text/plain"
+   to  "message/rfc822".  This 
+is  done  to allow a more readable
+ digest format that is largely 
+compatible  (except  for the  quoting
+convention) with RFC 934. <P>
+A digest in this format might,  then,
+look  something  like  this: 
+<PRE>
+From: Moderator-Address 
+MIME-Version: 1.0 
+Subject:  Internet Digest, volume 42 
+Content-Type: multipart/digest; 
+     boundary="---- next message ----" 
+
+
+------ next message ---- 
+
+From: someone-else 
+Subject: my opinion 
+
+...body goes here ... 
+
+------ next message ---- 
+
+From: someone-else-again 
+Subject: my different opinion 
+
+... another body goes here... 
+
+------ next message ------
+
+
+</PRE>
+<H2><A
+NAME="z1">7.2.5     The Multipart/parallel
+subtype</A></H2>This document defines a "parallel"
+subtype of the  multipart  Content-Type.
+ This  type  is  syntactically identical
+ to  multipart/mixed, but  the 
+semantics  are  different.   In 
+particular,  in  a  parallel entity,
+ all  of the parts are  intended
+to be presented in parallel, i.e.,
+ simultaneously,  on  hardware and
+ software  that  are  capable of
+doing so.  Composing agents should
+be aware that many mail readers will
+ lack this capability and will show
+the parts serially in any  event.
+</BODY>
+</HTML>
