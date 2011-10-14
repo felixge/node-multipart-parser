@@ -6,11 +6,22 @@ A fast and streaming multipart parser.
 
 No, this is still being developed.
 
-## Technical Details
+## Speed
 
-Satisfy your inner geek:
+Blah.
 
-* Maximum buffer size initial boundary: 1024 bytes
-* Maximum buffer size for header fields: 1024 bytes
-* Maximum buffer size for header values: 1024 bytes
-* Maximum total buffer size: 3072 bytes
+## Security
+
+Blah.
+
+## Compliance
+
+Blah.
+
+## Error Handling
+
+Blah.
+
+## License
+
+TBD
