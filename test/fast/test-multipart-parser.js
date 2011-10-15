@@ -42,7 +42,7 @@ test('#write: leading boundary', function() {
 
 test('#write: leading preamble', function() {
   parser.write(new Buffer(boundary.substr(0, 4) + 'HAHA'));
-  assert.equal(parser._state, 'BOUNDARY_MATCH');
+  assert.equal(parser._state, 'FIRST_BOUNDARY');
 
   parser.write(new Buffer('--' + boundary + '\r\n'));
   assert.equal(parser._state, 'HEADER_FIELD');
@@ -191,7 +191,7 @@ test('#write: hit partial boundary in part data spread over 3 buffers', function
   assert.deepEqual(buffers, ['ab', '--en', 'haha']);
 });
 
-test('#write: hit intermediate boundary', function() {
+test('#write: hit intermediate partial boundary', function() {
   parser._part  = new Part();
   parser._state = 'PART_BODY';
   parser._boundary = new Buffer('--end');
@@ -215,7 +215,52 @@ test('#write: hit intermediate boundary', function() {
   assert.deepEqual(buffers, ['ab', '--en', 'haha']);
 });
 
-// @TODO Recognize intermediate part boundaries, emit multiple part objects
-// @TODO Recognize last boundary, emit end event
+test('#write: full rfc1341 entity with preamble and epilogue', function() {
+  parser.boundary('simple boundary');
+
+  var part1 =
+    'This is implicitly typed plain ASCII text.\r\n' +
+    'It does NOT end with a linebreak.';
+  var part2 =
+    'This is explicitly typed plain ASCII text.\r\n' +
+    'It DOES end with a linebreak.\r\n';
+
+  var rfc1341Entity =
+    '--simple boundary\r\n' +
+    '\r\n' +
+    part1 +
+    '\r\n' +
+    '--simple boundary\r\n' +
+    'Content-type: text/plain; charset=us-ascii\r\n' +
+    '\r\n' +
+    part2 +
+    '\r\n' +
+    '--simple boundary--\r\n' +
+    'This is the epilogue.  It is also to be ignored.\r\n';
+
+  var parts = [];
+  var ended = false;
+  parser
+    .on('part', function(part) {
+      parts.push(part);
+
+      part.data = '';
+      part.on('data', function(chunk) {
+        part.data += chunk;
+      });
+    })
+    .on('end', function() {
+      ended = true;
+    });
+
+  parser.write(new Buffer(rfc1341Entity));
+
+  assert.equal(parts.length, 2);
+  assert.equal(parts[0].data, part1);
+  assert.equal(parts[1].data, part2);
+  assert.ok(ended);
+});
+
 // @TODO Implement benchmark (use commander for arguments)
 // @TODO Implement booyer-moore speed up
+// @TODO More unit tests for edge cases (test rfc1341 entity when written byte by byte)
