@@ -12,11 +12,12 @@
   "engines": {
     "node": "*"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
     "fast-or-slow": "0.0.5",
-    "far": "0.0.7"
+    "far": "0.0.7",
+    "commander": "0.2.0",
+    "uubench": "0.0.1"
   },
   "scripts": {
     "test": "make test"
