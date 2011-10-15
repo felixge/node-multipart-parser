@@ -215,7 +215,7 @@ test('#write: hit intermediate partial boundary', function() {
   assert.deepEqual(buffers, ['ab', '--en', 'haha']);
 });
 
-test('#write: full rfc1341 entity with preamble and epilogue', function() {
+function testRfc1341Entity(chunkSize) {
   parser.boundary('simple boundary');
 
   var part1 =
@@ -226,6 +226,9 @@ test('#write: full rfc1341 entity with preamble and epilogue', function() {
     'It DOES end with a linebreak.\r\n';
 
   var rfc1341Entity =
+    'This is the preamble.  It is to be ignored, though it\r\n' +
+    'is a handy place for mail composers to include an\r\n' +
+    'explanatory note to non-MIME compliant readers.\r\n' +
     '--simple boundary\r\n' +
     '\r\n' +
     part1 +
@@ -253,14 +256,29 @@ test('#write: full rfc1341 entity with preamble and epilogue', function() {
       ended = true;
     });
 
-  parser.write(new Buffer(rfc1341Entity));
+  var buffer = new Buffer(rfc1341Entity);
+  if (!chunkSize) {
+    parser.write(buffer);
+  } else {
+    for (var i = 0; i < buffer.length; i += chunkSize) {
+      var chunk = new Buffer(buffer.slice(i, i + chunkSize));
+      parser.write(chunk);
+    }
+  }
 
   assert.equal(parts.length, 2);
   assert.equal(parts[0].data, part1);
   assert.equal(parts[1].data, part2);
   assert.ok(ended);
+}
+
+test('#write: full rfc1341 entity', function() {
+  testRfc1341Entity();
+});
+
+test('#write: full rfc1341 entity with chunk size: 1', function() {
+  testRfc1341Entity(1);
 });
 
 // @TODO Implement benchmark (use commander for arguments)
 // @TODO Implement booyer-moore speed up
-// @TODO More unit tests for edge cases (test rfc1341 entity when written byte by byte)
