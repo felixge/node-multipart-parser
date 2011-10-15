@@ -261,7 +261,11 @@ function testRfc1341Entity(chunkSize) {
     parser.write(buffer);
   } else {
     for (var i = 0; i < buffer.length; i += chunkSize) {
-      var chunk = new Buffer(buffer.slice(i, i + chunkSize));
+      var end = (i + chunkSize < buffer.length)
+        ? i + chunkSize
+        : buffer.length;
+
+      var chunk = new Buffer(buffer.slice(i, end));
       parser.write(chunk);
     }
   }
@@ -276,9 +280,13 @@ test('#write: full rfc1341 entity', function() {
   testRfc1341Entity();
 });
 
-test('#write: full rfc1341 entity with chunk size: 1', function() {
-  testRfc1341Entity(1);
-});
+// What can I say, my ability to visualize this state machine has its limits :)
+for (var i = 1; i <= 10; i++) {
+  test('#write: full rfc1341 entity with chunk size: ' + i, function() {
+    var chunkSize = parseInt(this.name.match(/\d+$/), 10);
+    testRfc1341Entity(chunkSize);
+  });
+}
 
 // @TODO Implement benchmark (use commander for arguments)
 // @TODO Implement booyer-moore speed up
