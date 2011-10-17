@@ -42,7 +42,7 @@ test('#write: leading boundary', function() {
 
 test('#write: leading preamble', function() {
   parser.write(new Buffer(boundary.substr(0, 4) + 'HAHA'));
-  assert.equal(parser._state, 'FIRST_BOUNDARY');
+  assert.equal(parser._state, 'PREAMBLE');
 
   parser.write(new Buffer('--' + boundary + '\r\n'));
   assert.equal(parser._state, 'HEADER_FIELD');
