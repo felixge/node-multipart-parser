@@ -27,13 +27,15 @@ test('#write: error: invalid parser state', function() {
 });
 
 test('#write: error: write without boundary', function() {
-  parser._boundary = null;
-
   var buffer = new Buffer('a');
-  assertEmitsError(buffer, 'MultipartParser.NoBoundary');
+  parser     = new MultipartParser();
+
+  assert.throws(function() {
+    parser.write(buffer);
+  }, /Bad state: NO_BOUNDARY/);
 });
 
-test('#write: leading boundary', function() {
+test('#write: tolerate missing CRLF on first boundary', function() {
   var buffer = new Buffer('--' + boundary + '\r\n');
   parser.write(buffer);
 
@@ -58,15 +60,11 @@ test('#write: error: Invalid header token', function() {
 test('#write: Emit part object with lowercased headers', function() {
   var buffer = new Buffer('Header-1:value-1\r\nHeader-2:value-2\r\n\r\n');
   parser._state = 'HEADER_FIELD';
+  parser._part  = new Part();
 
-  var part;
-  parser.on('part', function(_part) {
-    part = _part;
-  });
   parser.write(buffer);
 
-
-  assert.deepEqual(part.headers, {
+  assert.deepEqual(parser._part.headers, {
     'header-1': 'value-1',
     'header-2': 'value-2',
   });
@@ -75,14 +73,11 @@ test('#write: Emit part object with lowercased headers', function() {
 test('#write: Trim leading and trailing header value whitespace', function() {
   var buffer = new Buffer('header: value \r\n\r\n');
   parser._state = 'HEADER_FIELD';
+  parser._part  = new Part();
 
-  var part;
-  parser.on('part', function(_part) {
-    part = _part;
-  });
   parser.write(buffer);
 
-  assert.deepEqual(part.headers, {'header': 'value'});
+  assert.deepEqual(parser._part.headers, {'header': 'value'});
 });
 
 test('#write: error: CR on non-empty _headerField', function() {
@@ -94,14 +89,11 @@ test('#write: error: CR on non-empty _headerField', function() {
 test('#write: no part headers', function() {
   var buffer = new Buffer('\r\n');
   parser._state = 'HEADER_FIELD';
+  parser._part  = new Part();
 
-  var part;
-  parser.on('part', function(_part) {
-    part = _part;
-  });
   parser.write(buffer);
 
-  assert.deepEqual(part.headers, {});
+  assert.deepEqual(parser._part.headers, {});
 });
 
 test('#write: header buffer overflow in field', function() {
@@ -134,50 +126,53 @@ test('#write: emit part data', function() {
 });
 
 test('#write: hit partial boundary in part data', function() {
-  parser._part  = new Part();
-  parser._state = 'PART_BODY';
-  parser._boundary = new Buffer('--end');
+  parser.boundary('end');
+  parser._preamble = false;
+  parser._part     = new Part();
+  parser._state    = 'PART_BODY';
 
   var buffers =[];
   parser._part.on('data', function(buffer) {
     buffers.push(''+buffer);
   });
 
-  parser.write(new Buffer('ab--enc'));
-  assert.deepEqual(buffers, ['ab', '--en', 'c']);
+  parser.write(new Buffer('ab\r\n--enc'));
+  assert.deepEqual(buffers, ['ab', '\r\n--en', 'c']);
 });
 
 test('#write: hit partial boundary in part data spread over 2 buffers', function() {
-  parser._part  = new Part();
-  parser._state = 'PART_BODY';
-  parser._boundary = new Buffer('--end');
+  parser.boundary('end');
+  parser._preamble = false;
+  parser._part     = new Part();
+  parser._state    = 'PART_BODY';
 
   var buffers =[];
   parser._part.on('data', function(buffer) {
     buffers.push(''+buffer);
   });
 
-  var first = new Buffer('ab--e');
+  var first = new Buffer('ab\r\n--e');
   var second = new Buffer('haha');
 
   parser.write(first);
   assert.equal(buffers.length, 1);
 
   parser.write(second);
-  assert.deepEqual(buffers, ['ab', '--e', 'haha']);
+  assert.deepEqual(buffers, ['ab', '\r\n--e', 'haha']);
 });
 
 test('#write: hit partial boundary in part data spread over 3 buffers', function() {
-  parser._part  = new Part();
-  parser._state = 'PART_BODY';
-  parser._boundary = new Buffer('--end');
+  parser.boundary('end');
+  parser._preamble = false;
+  parser._part     = new Part();
+  parser._state    = 'PART_BODY';
 
   var buffers =[];
   parser._part.on('data', function(buffer) {
     buffers.push(''+buffer);
   });
 
-  var first = new Buffer('ab--e');
+  var first = new Buffer('ab\r\n--e');
   var second = new Buffer('n');
   var third = new Buffer('haha');
 
@@ -188,31 +183,7 @@ test('#write: hit partial boundary in part data spread over 3 buffers', function
   assert.equal(buffers.length, 1);
 
   parser.write(third);
-  assert.deepEqual(buffers, ['ab', '--en', 'haha']);
-});
-
-test('#write: hit intermediate partial boundary', function() {
-  parser._part  = new Part();
-  parser._state = 'PART_BODY';
-  parser._boundary = new Buffer('--end');
-
-  var buffers =[];
-  parser._part.on('data', function(buffer) {
-    buffers.push(''+buffer);
-  });
-
-  var first = new Buffer('ab--e');
-  var second = new Buffer('n');
-  var third = new Buffer('haha');
-
-  parser.write(first);
-  assert.equal(buffers.length, 1);
-
-  parser.write(second);
-  assert.equal(buffers.length, 1);
-
-  parser.write(third);
-  assert.deepEqual(buffers, ['ab', '--en', 'haha']);
+  assert.deepEqual(buffers, ['ab', '\r\n--en', 'haha']);
 });
 
 function testRfc1341Entity(chunkSize) {
@@ -244,6 +215,9 @@ function testRfc1341Entity(chunkSize) {
   var parts = [];
   var ended = false;
   parser
+    .on('error', function(error) {
+      throw error;
+    })
     .on('part', function(part) {
       parts.push(part);
 
