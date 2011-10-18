@@ -5,7 +5,7 @@ var options = require('commander');
 
 options
   .option('-e, --entitysize [size]', 'The size of the entity [10mb].', '10mb')
-  .option('-c, --chunksize [size]', 'The write chunksize in kb [4kb]', '4kb')
+  .option('-c, --chunksize [size]', 'The write chunksize in kb [32kb]', '32kb')
   .option('-r, --runs [runs]', 'How many times to run the benchmarks [3]', 5)
   .option('-i, --iterations [iterations]', 'The minimum amount of iterations for each run. [1]', 1)
   .parse(process.argv);
