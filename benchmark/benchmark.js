@@ -47,13 +47,21 @@ var suite = new uubench.Suite({
 
 var boundary = helper.boundary();
 var buffer = helper.multipartMessage(boundary, options.entitysize);
+var chunkSize = helper.toBytes(options.chunksize);
 
 var parsers = helper.parsers();
 for (var name in parsers) {
   (function(name) {
     suite.bench(name, function(next) {
       var write = parsers[name](boundary, next);
-      write(buffer);
+
+      for (var i = 0; i < buffer.length; i += chunkSize) {
+        var end = (i + chunkSize < buffer.length)
+          ? i + chunkSize
+          : buffer.length;
+
+        write(buffer.slice(i, end));
+      }
     });
   })(name);
 }
