@@ -33,13 +33,13 @@ var suite = new uubench.Suite({
     process.stdout.write('.');
     if (--options.runs) return suite.run();
 
-    console.log('');
+    console.log('\n');
+
     for (var name in results) {
       var series = results[name];
       var avg    = helper.mean(series);
       var sdev   = helper.sdev(series);
 
-      console.log('');
       console.log('%s: %s mb/sec (+/- %s)', name, avg.toFixed(2), sdev.toFixed(2));
     }
   },
@@ -48,40 +48,14 @@ var suite = new uubench.Suite({
 var boundary = helper.boundary();
 var buffer = helper.multipartMessage(boundary, options.entitysize);
 
-var Parser = require('..');
-suite.bench('multipart_parser', function(done) {
-  var parser = Parser.create(boundary);
-  parser.on('end', done);
-  parser.write(buffer);
-});
+var parsers = helper.parsers();
+for (var name in parsers) {
+  (function(name) {
+    suite.bench(name, function(next) {
+      var write = parsers[name](boundary, next);
+      write(buffer);
+    });
+  })(name);
+}
 
 suite.run();
-
-
-//var chunkSize = options.chunksize * 1024;
-//function addParser(name) {
-  //var parser = require('./' + name);
-  //var buffer = createMultipartBuffer(boundary, options.entitysize * 1024 * 1024);
-  //var slices = [];
-
-  //for (var i = 0; i < buffer.length; i += chunkSize) {
-    //var end = (i + chunkSize < buffer.length)
-      //? i + chunkSize
-      //: buffer.length;
-
-    //slices.push(buffer.slice(i, end));
-  //}
-
-  //suite.bench(name, function(next) {
-    //var write = parser(boundary, next);
-    //for (var i = 0; i < slices.length; i++) {
-      //var slice = slices[i];
-      //write(slice);
-    //}
-  //});
-//}
-
-//addParser('formidable');
-//addParser('multipart_parser');
-
-//suite.run();

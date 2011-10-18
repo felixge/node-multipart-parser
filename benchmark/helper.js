@@ -1,4 +1,5 @@
-var _ = require('underscore');
+var _     = require('underscore');
+var fs    = require('fs');
 var units = {
   'gb'    : Math.pow(1024, 3),
   'mb'    : Math.pow(1024, 2),
@@ -68,6 +69,25 @@ exports.multipartMessage = function(boundary, size) {
   buffer.write(head, 'ascii', 0);
   buffer.write(tail, 'ascii', buffer.length - tail.length);
   return buffer;
+};
+
+exports.parsers = function() {
+  var dir     = __dirname + '/parsers';
+  var parsers = {};
+
+  fs
+    .readdirSync(dir)
+    .filter(function(name) {
+      return /\.js$/.test(name);
+    })
+    .forEach(function(file) {
+      var parser = require(dir + '/' + file);
+      var name = file.replace(/\.js$/, '');
+
+      parsers[name] = parser;
+    });
+
+  return parsers;
 };
 
 // From: https://gist.github.com/642690
