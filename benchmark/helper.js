@@ -7,6 +7,8 @@ var units = {
 };
 
 exports.toBytes = function(str) {
+  if (typeof str === 'number') return str;
+
   var bytes = str.replace(/^([\d.]+)(.*)/i, function(m, size, unit) {
     size = parseFloat(size, 10);
 
@@ -25,17 +27,18 @@ exports.toBytes = function(str) {
   return parseInt(bytes, 10);
 };
 
-exports.toUnit = function(unit, bytes) {
+exports.toUnit = function(unit, size) {
+  var bytes = this.toBytes(size);
   var limit = units[unit];
+
   return (bytes / limit);
 };
 
-exports.normalizeSize = function(size) {
-  if (typeof size === 'string') size = this.toBytes(size);
-  return this.toHuman(size);
-};
-
 exports.toHuman = function(size) {
+  size = (typeof size === 'string')
+    ? size = this.toBytes(size)
+    : size;
+
   for (var unit in units) {
     var limit = units[unit];
     if (size < limit) continue;
@@ -66,3 +69,61 @@ exports.multipartMessage = function(boundary, size) {
   buffer.write(tail, 'ascii', buffer.length - tail.length);
   return buffer;
 };
+
+// From: https://gist.github.com/642690
+(function(uustats){
+  uustats.sdev = function(series) {
+    return Math.sqrt(uustats.variance(series));
+  };
+
+  uustats.variance = function(series) {
+    var t = 0, squares = 0, len = series.length;
+
+    for (var i=0; i<len; i++) {
+      var obs = series[i];
+      t += obs;
+      squares += Math.pow(obs, 2);
+    }
+    return (squares/len) - Math.pow(t/len, 2);
+  },
+
+  uustats.mean = function(series) {
+    var t = 0, len = series.length;
+
+    for (var i=0; i<len; i++) {
+      t += series[i];
+    }
+    return t / Math.max(len, 1);
+  }
+
+  uustats.summary = function(series) {
+    var q = uustats.quantile,
+        a = series.slice(0).sort(function(a, b) { return a - b });
+
+    return {
+      min: a[0],
+      p25: q(a, 0.25),
+      med: q(a, 0.5),
+      p75: q(a, 0.75),
+      max: a[a.length - 1],
+      p10: q(a, 0.1),
+      p90: q(a, 0.9),
+      avg: uustats.mean(a)
+    }
+  };
+
+  uustats.quantile = function(series, q) {
+    var len = series.length,
+        pos = q * (len - 1),
+        t   = Math.ceil(pos),
+        f   = t - 1;
+
+    if (f < 0) { return series[0] }
+    if (t >= len) { return series[len - 1] }
+    return series[f] * (t - pos) + series[t] * (pos - f);
+  };
+
+  uustats.round = function(x, n) {
+    return Math.round(x*Math.pow(10, n))/Math.pow(10, n);
+  };
+})(typeof exports !== 'undefined' ? exports : window.uustats = {});
