@@ -97,9 +97,7 @@ test('#write: no part headers', function() {
 });
 
 test('#write: header buffer overflow in field', function() {
-  parser._headerBufferLimit = 2;
-
-  var buffer = new Buffer('ab');
+  var buffer = new Buffer(Array(201).join('a'));
   parser._state = 'HEADER_FIELD';
   parser.write(buffer);
   assertEmitsError(new Buffer('c'), 'MultipartParser.HeaderBufferOverflow');
