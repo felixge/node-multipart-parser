@@ -21,6 +21,8 @@ console.log('  Runs                : %s', options.runs);
 console.log('  Iterations per run  : %s', options.iterations);
 console.log('');
 
+var start = Date.now();
+
 var results = {};
 var suite = new uubench.Suite({
   iterations: options.iterations,
@@ -38,7 +40,8 @@ var suite = new uubench.Suite({
     process.stdout.write('.');
     if (--options.runs) return suite.run();
 
-    console.log('\n');
+    var duration = helper.round((Date.now() - start) / 1000, 1);
+    console.log('\nBenchmark took: %d seconds\n', duration);
 
     for (var name in results) {
       var result = results[name];

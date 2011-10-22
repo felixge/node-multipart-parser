@@ -13,17 +13,18 @@ with existing implementations, and can easily exceed typical disk/storage
 throughputs.
 
 ```
-$ node benchmark/benchmark.js
+$ node benchmark/benchmark.js -r 100
 Options:
   Entity Size         : 10 mb
   Chunk Size          : 32 kb
-  Runs                : 10
+  Runs                : 100
   Iterations per run  : 10
 
-..........
+....................................................................................................
+Benchmark took: 33.8 seconds
 
-formidable: 747.92 mb/sec (95% of 100 iterations)
-multipart_parser: 849.64 mb/sec (95% of 100 iterations)
+formidable: 740.47 mb/sec (95% of 1000 iterations)
+multipart_parser: 846.75 mb/sec (95% of 1000 iterations)
 ```
 
 ## Is it secure?
