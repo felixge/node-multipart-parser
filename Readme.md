@@ -6,9 +6,25 @@ A fast and streaming multipart parser.
 
 No, this is still being developed.
 
-## Speed
+## Is it fast?
 
-Blah.
+Yes. According to the benchmark suite shipped with this parser, it is on par
+with existing implementations, and can easily exceed typical disk/storage
+throughputs.
+
+```
+$ node benchmark/benchmark.js
+Options:
+  Entity Size         : 10 mb
+  Chunk Size          : 32 kb
+  Runs                : 10
+  Iterations per run  : 10
+
+..........
+
+formidable: 747.92 mb/sec (95% of 100 iterations)
+multipart_parser: 849.64 mb/sec (95% of 100 iterations)
+```
 
 ## Security
 
