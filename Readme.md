@@ -26,15 +26,15 @@ formidable: 747.92 mb/sec (95% of 100 iterations)
 multipart_parser: 849.64 mb/sec (95% of 100 iterations)
 ```
 
-## Security
+## Is it secure?
 
 Blah.
 
-## Compliance
+## Is it compliant?
 
 Blah.
 
-## Error Handling
+## Is it user friendly?
 
 Blah.
 
