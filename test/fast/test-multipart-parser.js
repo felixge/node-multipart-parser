@@ -261,6 +261,3 @@ for (var i = 1; i <= 10; i++) {
     testRfc1341Entity(chunkSize);
   });
 }
-
-// @TODO Implement benchmark (use commander for arguments)
-// @TODO Implement booyer-moore speed up
