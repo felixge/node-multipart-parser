@@ -222,9 +222,13 @@ function testRfc1341Entity(chunkSize) {
       parts.push(part);
 
       part.data = '';
-      part.on('data', function(chunk) {
-        part.data += chunk;
-      });
+      part
+        .on('data', function(chunk) {
+          part.data += chunk;
+        })
+        .on('end', function() {
+          part.ended = true;
+        });
     })
     .on('end', function() {
       ended = true;
@@ -247,6 +251,9 @@ function testRfc1341Entity(chunkSize) {
   assert.equal(parts.length, 2);
   assert.equal(parts[0].data, part1);
   assert.equal(parts[1].data, part2);
+  parts.forEach(function(part, i) {
+    assert.ok(part.ended, 'Part ' + (i + 1) + ' did not end.');
+  });
   assert.ok(ended);
 }
 
