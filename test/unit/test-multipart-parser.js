@@ -70,6 +70,25 @@ test('MultipartParser', {
     assert.deepEqual(parser._part.headers, {'header': 'value'});
   },
 
+  // See: http://tools.ietf.org/html/rfc822#section-3.1.3
+  '#write: Handle multi-line header field value (email)': function() {
+    var buffer = new Buffer(
+      'Content-Type: text/html;\r\n' +
+      '\tcharset="ISO-8859-4"\r\n' +
+      'Content-Transfer-Encoding: quoted-printable\r\n\r\n'
+    );
+
+    parser._state = 'HEADER_FIELD';
+    parser._part  = new Part();
+
+    parser.write(buffer);
+
+    assert.deepEqual(parser._part.headers, {
+      'content-type': 'text/html;\tcharset="ISO-8859-4"',
+      'content-transfer-encoding': 'quoted-printable',
+    });
+  },
+
   '#write: error: CR on non-empty _headerField': function() {
     var buffer = new Buffer('head\r');
     parser._state = 'HEADER_FIELD';
