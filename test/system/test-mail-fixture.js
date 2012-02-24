@@ -14,6 +14,16 @@ var endEvents  = 0;
 parser
   .on('part', function(part) {
     partEvents++;
+
+    var contentType = part.headers['content-type'];
+    var match       = contentType.match(/boundary=([^; ]+)/)
+
+    if (!match) {
+      return;
+    }
+
+    var subParser = new MultipartParser(match[1]);
+    part.pipe(subParser);
   })
   .on('end', function() {
     endEvents++;
