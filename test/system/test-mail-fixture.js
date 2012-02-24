@@ -1,4 +1,5 @@
 var common          = require('../common');
+var assert          = require('assert');
 var fs              = require('fs');
 var MultipartParser = require(common.dir.lib + '/multipart_parser');
 
@@ -7,6 +8,18 @@ var stream = fs.createReadStream(common.dir.fixture + '/mail.txt');
 
 stream.pipe(parser);
 
-parser.on('end', function() {
-  console.log('parser: "end"');
+var partEvents = 0;
+var endEvents  = 0;
+
+parser
+  .on('part', function(part) {
+    partEvents++;
+  })
+  .on('end', function() {
+    endEvents++;
+  });
+
+process.on('exit', function() {
+  assert.equal(partEvents, 2);
+  assert.equal(endEvents, 1);
 });
