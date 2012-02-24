@@ -183,8 +183,6 @@ test('MultipartParser', {
   '#write: full rfc1341 entity with chunk size 1-10': function() {
     // What can I say, my ability to visualize this state machine has its limits :)
     for (var i = 1; i <= 10; i++) {
-      parser = new MultipartParser(boundary);
-
       try {
         testRfc1341Entity(i);
       } catch (err) {
@@ -275,4 +273,8 @@ function testRfc1341Entity(chunkSize) {
     assert.ok(part.ended, 'Part ' + (i + 1) + ' did not end.');
   });
   assert.ok(ended);
+
+  // Reset the parser so it can be re-used
+  parser.reset();
+  parser.removeAllListeners();
 }
