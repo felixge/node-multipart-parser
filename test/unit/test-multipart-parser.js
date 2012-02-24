@@ -295,5 +295,4 @@ function testRfc1341Entity(chunkSize) {
 
   // Reset the parser so it can be re-used
   parser.reset();
-  parser.removeAllListeners();
 }
